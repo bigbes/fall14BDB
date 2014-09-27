@@ -1,4 +1,4 @@
-#include <string.h>
+#include <stddef.h>
 
 /* check `man dbopen` */
 struct DBT {
@@ -11,6 +11,22 @@ struct DB{
     /* Returns 0 on OK, -1 on Error */
     int (*close)(const struct DB *db);
     int (*del)  (const struct DB *db, const struct DBT *key);
+    /* Returns data into *data */
+    /* e.g.
+     * struct DB db = dbopen(...);
+     * struct DBT key = {
+     *     .data = "hello"
+     *     .size = 6
+     * }
+     * struct DBT d = {
+     *     .data = ""
+     *     .size = 0
+     * }
+     * db.get(db, *key, *d);
+     * // d.data now stores data with length d.size
+     * // d.data is (c/m)alloc'ed inside BTree
+     * // Caller must free d.data
+     * */
     int (*get)  (const struct DB *db, struct DBT *key, struct DBT *data);
     int (*put)  (const struct DB *db, struct DBT *key, const struct DBT *data);
     /* int (*sync)(const struct DB *db); */
