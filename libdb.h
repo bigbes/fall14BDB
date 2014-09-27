@@ -8,11 +8,12 @@ struct DBT {
 
 struct DB{
     /* Public API */
+    /* Returns 0 on OK, -1 on Error */
     int (*close)(const struct DB *db);
-    int (*del)(const struct DB *db, const struct DBT *key);
-    int (*get)(const struct DB *db, struct DBT *key, struct DBT *data);
-    int (*put)(const struct DB *db, struct DBT *key, const struct DBT *data);
-    int (*sync)(const struct DB *db);
+    int (*del)  (const struct DB *db, const struct DBT *key);
+    int (*get)  (const struct DB *db, struct DBT *key, struct DBT *data);
+    int (*put)  (const struct DB *db, struct DBT *key, const struct DBT *data);
+    /* int (*sync)(const struct DB *db); */
     /* Private API */
     /* ... */
 }; /* Need for supporting multiple backends (HASH/BTREE) */
@@ -26,7 +27,7 @@ struct DBC {
         size_t chunk_size;
         /* Maximum memory size */
         /* 16MB by default */
-        size_t mem_size;
+        /* size_t mem_size; */
 };
 
 struct DB *dbcreate(const char *file, const struct DBC conf);
