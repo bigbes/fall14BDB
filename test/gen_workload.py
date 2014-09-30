@@ -111,6 +111,11 @@ class Workload(object):
 
 
 if __name__ == '__main__':
+    path = os.path.dirname(sys.argv[0])
+    if not path:
+        path = '.'
+    os.chdir(path)
+
     wl = Workload()
     with open('1.out', 'w') as f:
         for k in wl.generate():

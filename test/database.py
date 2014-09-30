@@ -86,7 +86,7 @@ class Sophia(Database):
         self.env  = self.dll.sp_env()
         if not self.env:
             raise self.exc('Failed to create ENV')
-        rc = self.dll.sp_ctl(self.env, self.SPDIR, self.SPO_CREAT|self.SPO_RDWR, './db')
+        rc = self.dll.sp_ctl(self.env, self.SPDIR, self.SPO_CREAT | self.SPO_RDWR, './db')
         if rc == -1:
             raise self.exc(self.format_error())
         self.db   = self.dll.sp_open(self.env)
