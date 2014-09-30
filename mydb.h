@@ -48,3 +48,8 @@ struct DBC {
 
 struct DB *dbcreate(const char *file, const struct DBC conf);
 struct DB *dbopen  (const char *file); /* Metadata in file */
+
+int db_close(const struct DB *db);
+int db_del(const struct DB *db, void *key, size_t key_len);
+int db_get(const struct DB *db, void *key, size_t key_len, void **val, size_t *val_len);
+int db_put(const struct DB *db, void *key, size_t key_len, void *val, size_t val_len);

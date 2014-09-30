@@ -1,2 +1,2 @@
 all:
-	gcc mydb.c -shared -fPIC -o libmydb.so
+	gcc mydb.c -std=c99 -shared -fPIC -o libmydb.so
