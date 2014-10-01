@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+import os
+import sys
 import yaml
 import random
 
-import itertools
 import string
+
+import argparse
 
 from ordered_set import OrderedSet
 
@@ -41,21 +44,22 @@ class Workload(object):
         'shuffle': False,
         'key_size': 20,
         'min_val_size': 128,
-        'max_val_size': 4096,
+        'max_val_size': 256,
     }
 
-    key_file = 'cities.txt'
+    key_file = 'keys.txt'
+    val_file = 'values.txt'
 
     avail_distrib = [
-        'uniform',
-        #'pareto',
-        #'hotspot',
-        #'latest',
+        # 'uniform',
+        # 'pareto',
+        # 'hotspot',
+        # 'latest',
         'none',
     ]
 
     def read_config(self, conf):
-        cfg = {} if cfg is None else yaml.load(open(conf, 'r').read())
+        cfg = {} if conf is None else yaml.load(open(conf, 'r').read())
         assert(isinstance(cfg, dict))
         if ('get' in cfg) or ('put' in cfg):
             self.get = cfg.get('get', 0)
@@ -86,37 +90,59 @@ class Workload(object):
         self.insert_count = xrange()
 
     def generate(self):
-        self.keys = open(self.key_file, 'r').read().split()
+        self.keys = open(self.key_file, 'r').read().split('\n')
         if self.shuffle:
             random.shuffle(self.keys)
-
-        self.keys = [k[:20] for k in self.keys]
-        self.keys = filter((lambda x: len(x) > 10), self.keys)
-        self.keys = self.keys[:500]
-        self.vals = []
-        for k in xrange(len(self.keys)):
-            self.vals.append(
-                    randomword(random.randint(self.min_val_size, self.max_val_size))
-            )
+        self.vals = open(self.val_file, 'r').read().split('\n')
+        if self.shuffle:
+            random.shuffle(self.vals)
         put = NoneDistribution(self.keys, self.vals)
         get = NoneDistribution(self.keyset)
         for k in self.opset:
             if k == 0:
                 kv = put.get()
                 self.keyset.append(kv[0])
-                yield ('put', kv[0], kv[1])
+                yield ['put', kv[0], kv[1]]
             elif k == 1:
                 kv = get.get()
-                yield ('get', kv[0])
+                yield ['get', kv[0]]
 
-
-if __name__ == '__main__':
+def chdir():
     path = os.path.dirname(sys.argv[0])
     if not path:
         path = '.'
     os.chdir(path)
 
-    wl = Workload()
-    with open('1.out', 'w') as f:
-        for k in wl.generate():
-            f.write(' '.join(k)+'\n')
+def parse_args(cur_path):
+    parser = argparse.ArgumentParser(
+            description = "Generating workload for testing HW1")
+    parser.add_argument(
+            '--config',
+            default = None,
+            help    = 'Config file'
+    )
+    parser.add_argument(
+            '--output',
+            default = 'output',
+            help    = 'Output file'
+    )
+
+    args = parser.parse_args()
+    if args.config:
+        args.config = os.path.join(cur_path, args.config)
+    else:
+        args.config = None
+    if args.output:
+        args.output = os.path.join(cur_path, args.output)
+        args.output += '.in'
+    return args
+
+
+if __name__ == '__main__':
+    cur_path = os.getcwd()
+    chdir()
+    cur_args = parse_args(cur_path)
+
+    wl = Workload(cur_args.config)
+    with open(cur_args.output, 'w') as f:
+        f.write(yaml.dump([k for k in wl.generate()]))
