@@ -1,4 +1,4 @@
-#include "third_party/sophia.h"
+#include "third_party/sophia/db/sophia.h"
 
 struct DBT {
 	void  *data;
