@@ -24,6 +24,9 @@ struct DBC {
 	size_t chunk_size;
 };
 
+struct DB *dbcreate(const char *path, const struct DBC conf);
+struct DB *dbopen  (const char *path, const struct DBC conf);
+
 int db_close(struct DB *db);
 int db_del(const struct DB *, void *, size_t);
 int db_get(const struct DB *, void *, size_t, void **, size_t *);

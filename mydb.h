@@ -39,6 +39,10 @@ struct DBC {
 	 * size_t mem_size; */
 };
 
+/* don't store metadata in the file */
+struct DB *dbcreate(const char *file, const struct DBC conf);
+struct DB *dbopen  (const char *file, const struct DBC conf);
+
 int db_close(struct DB *db);
 int db_del(const struct DB *, void *, size_t);
 int db_get(const struct DB *, void *, size_t, void **, size_t *);

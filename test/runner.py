@@ -66,7 +66,16 @@ if __name__ == '__main__':
     out = StringIO()
     run_workload(wl, db, out)
     output = cur_args.workload.replace('.in', '.out')
+    print "=" * 80
+    print "Library:", cur_args.so
     if cur_args.new:
         open(output, 'w').write(out.getvalue())
+        print "Workload output successfully generated"
+        print "Output:", output
     else:
-        assert(open(output, 'r').read() == out.getvalue())
+        print "Test with workload " + repr(cur_args.workload)
+        if (open(output, 'r').read() == out.getvalue()):
+            print "Result is OK"
+        else:
+            print "Result is not OK"
+    print "=" * 80

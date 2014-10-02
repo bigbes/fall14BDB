@@ -2,25 +2,79 @@
 
 import os
 import sys
+import math
 import yaml
 import random
-
 import string
-
 import argparse
+import itertools
+
+
 
 from ordered_set import OrderedSet
 
-class Distribution(object):
-    pass
+def floor(num):
+    return int(math.floor(num))
 
-class NoneDistribution(Distribution):
+class UniformDistribution(object):
+    def __init__(self, key, val=None):
+        self.key = key
+        self.val = val
+
+    def get(self):
+        if len(self.key) == 0:
+            return None
+        key = random.choice(self.key)
+        val = None if self.val is None else random.choice(self.val)
+        return (key, val)
+
+pareto_const = 3
+
+class LatestDistribution(object):
+    def __init__(self, key, val=None):
+        self.key = key
+        self.val = val
+        self.lb = 0 # Min
+        self.rb = 4 # Max
+
+    def get(self):
+        if len(self.key) == 0:
+            return None
+        key = self.lb - 1
+        while key < self.lb:
+            key = random.paretovariate(pareto_const)*(-1) + 5
+        key = min(len(self.key), floor(len(self.key) * key / (self.rb - self.lb)))
+        key = self.key[key]
+        val = None if self.val is None else random.choice(self.val)
+        return (key, val)
+
+class OldestDistribution(object):
+    def __init__(self, key, val=None):
+        self.key = key
+        self.val = val
+        self.lb = 0 # Max
+        self.rb = 4 # Min
+
+    def get(self):
+        if len(self.key) == 0:
+            return None
+        key = self.rb + 1
+        while key > self.rb:
+            key = random.paretovariate(pareto_const) - 1
+        key = min(len(self.key), floor(len(self.key) * key / (self.rb - self.lb)))
+        key = self.key[key]
+        val = None if self.val is None else random.choice(self.val)
+        return (key, val)
+
+class NoneDistribution(object):
     def __init__(self, key, val=None):
         self.key = key
         self.val = val
         self.pos = 0
 
     def get(self):
+        if len(self.key) == 0:
+            return None
         if self.pos >= len(self.key):
             self.pos = 0
 
@@ -29,9 +83,6 @@ class NoneDistribution(Distribution):
         self.pos +=1
         return (key, val)
 
-class UniformDistribution(Distribution):
-    pass
-
 def randomword(length):
     return ''.join([random.choice(string.hexdigits) for k in xrange(length)])
 
@@ -39,7 +90,7 @@ class Workload(object):
     wl_defaults = {
         'get': 50,
         'put': 50,
-        'ops': 200,
+        'ops': 1000,
         'distrib': 'none',
         'shuffle': False,
         'key_size': 20,
@@ -51,10 +102,10 @@ class Workload(object):
     val_file = 'values.txt'
 
     avail_distrib = [
-        # 'uniform',
-        # 'pareto',
         # 'hotspot',
-        # 'latest',
+        'uniform',
+        'latest',
+        'oldest',
         'none',
     ]
 
@@ -69,12 +120,20 @@ class Workload(object):
             self.put = self.wl_defaults['put']
         assert(self.get + self.put == 100)
         self.ops = cfg.get('ops', self.wl_defaults['ops'])
-        self.distrib = cfg.get('distrib', self.wl_defaults['distrib'])
+        self.distrib = cfg.get('distrib', self.wl_defaults['distrib']).lower()
         assert(self.distrib in self.avail_distrib)
         self.shuffle = cfg.get('shuffle', self.wl_defaults['shuffle'])
         self.key_size = cfg.get('key_size', self.wl_defaults['key_size'])
         self.min_val_size = cfg.get('min_val_size', self.wl_defaults['min_val_size'])
         self.max_val_size = cfg.get('max_val_size', self.wl_defaults['max_val_size'])
+        self.distrib_class = NoneDistribution
+        if self.distrib == 'uniform':
+            self.distrib_class = UniformDistribution
+        elif self.distrib == 'latest':
+            self.distrib_class = LatestDistribution
+        elif self.distrib == 'oldest':
+            self.distrib_class = OldestDistribution
+
         assert(isinstance(self.shuffle, bool))
 
     def __init__(self, cfg=None):
@@ -96,15 +155,22 @@ class Workload(object):
         self.vals = open(self.val_file, 'r').read().split('\n')
         if self.shuffle:
             random.shuffle(self.vals)
-        put = NoneDistribution(self.keys, self.vals)
-        get = NoneDistribution(self.keyset)
-        for k in self.opset:
+        put = self.distrib_class(self.keys, self.vals)
+        get = self.distrib_class(self.keyset)
+        opqueue = []
+        for k in itertools.chain(self.opset, opqueue):
             if k == 0:
                 kv = put.get()
+                if (kv is None):
+                    opqueue.append(0)
+                    continue
                 self.keyset.append(kv[0])
                 yield ['put', kv[0], kv[1]]
             elif k == 1:
                 kv = get.get()
+                if (kv is None):
+                    opqueue.append(1)
+                    continue
                 yield ['get', kv[0]]
 
 def chdir():
@@ -146,3 +212,9 @@ if __name__ == '__main__':
     wl = Workload(cur_args.config)
     with open(cur_args.output, 'w') as f:
         f.write(yaml.dump([k for k in wl.generate()]))
+    print "-" * 80
+    print "Workload successfully generated"
+    print "Output:", cur_args.output
+    if cur_args.config is not None:
+        print "Config:", cur_args.config
+    print "-" * 80
