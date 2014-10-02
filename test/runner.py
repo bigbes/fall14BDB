@@ -7,7 +7,7 @@ import argparse
 
 from cStringIO import StringIO
 
-from database import Database
+from lib.database import Database
 
 def run_workload(fl, db, out):
     fl = yaml.load(fl.read())
@@ -77,5 +77,6 @@ if __name__ == '__main__':
         if (open(output, 'r').read() == out.getvalue()):
             print "Result is OK"
         else:
+            open(output + '.bad', 'w').write(out.getvalue())
             print "Result is not OK"
     print "=" * 80

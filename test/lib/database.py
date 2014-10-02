@@ -19,7 +19,10 @@ class Database(object):
 
     def __init__(self, path=None):
         self.so_path = path if path else self.def_path
-        assert(os.path.exists(self.so_path))
+        try:
+            assert(os.path.exists(self.so_path))
+        except AssertionError:
+            raise DBException("Can't find SO ad %s", repr(self.so_path))
         self.dll = ctypes.CDLL(self.so_path)
         self.exc = DBException
         self.db = self.dll.dbcreate('my.db', ctypes.byref(DBC(16*1024*1024, 4096)))
@@ -96,7 +99,10 @@ class Sophia(Database):
     def __init__(self, path=None):
         self.so_path = path if path else self.def_path
         self.exc  = SophiaException
-        assert(os.path.exists(self.so_path))
+        try:
+            assert(os.path.exists(self.so_path))
+        except AssertionError:
+            raise DBException("Can't find SO at %s" % repr(self.so_path))
         print self.so_path
         self.dll  = ctypes.CDLL(self.so_path)
         self.env  = self.dll.sp_env()

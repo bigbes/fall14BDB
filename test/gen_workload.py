@@ -9,9 +9,7 @@ import string
 import argparse
 import itertools
 
-
-
-from ordered_set import OrderedSet
+from lib.ordered_set import OrderedSet
 
 def floor(num):
     return int(math.floor(num))
@@ -98,8 +96,8 @@ class Workload(object):
         'max_val_size': 256,
     }
 
-    key_file = 'keys.txt'
-    val_file = 'values.txt'
+    key_file = 'data/keys.txt'
+    val_file = 'data/values.txt'
 
     avail_distrib = [
         # 'hotspot',
@@ -111,30 +109,32 @@ class Workload(object):
 
     def read_config(self, conf):
         cfg = {} if conf is None else yaml.load(open(conf, 'r').read())
-        assert(isinstance(cfg, dict))
-        if ('get' in cfg) or ('put' in cfg):
-            self.get = cfg.get('get', 0)
-            self.put = cfg.get('put', 0)
-        else:
-            self.get = self.wl_defaults['get']
-            self.put = self.wl_defaults['put']
-        assert(self.get + self.put == 100)
-        self.ops = cfg.get('ops', self.wl_defaults['ops'])
-        self.distrib = cfg.get('distrib', self.wl_defaults['distrib']).lower()
-        assert(self.distrib in self.avail_distrib)
-        self.shuffle = cfg.get('shuffle', self.wl_defaults['shuffle'])
-        self.key_size = cfg.get('key_size', self.wl_defaults['key_size'])
-        self.min_val_size = cfg.get('min_val_size', self.wl_defaults['min_val_size'])
-        self.max_val_size = cfg.get('max_val_size', self.wl_defaults['max_val_size'])
-        self.distrib_class = NoneDistribution
-        if self.distrib == 'uniform':
-            self.distrib_class = UniformDistribution
-        elif self.distrib == 'latest':
-            self.distrib_class = LatestDistribution
-        elif self.distrib == 'oldest':
-            self.distrib_class = OldestDistribution
-
-        assert(isinstance(self.shuffle, bool))
+        try:
+            assert(isinstance(cfg, dict))
+            if ('get' in cfg) or ('put' in cfg):
+                self.get = cfg.get('get', 0)
+                self.put = cfg.get('put', 0)
+            else:
+                self.get = self.wl_defaults['get']
+                self.put = self.wl_defaults['put']
+            assert(self.get + self.put == 100)
+            self.ops = cfg.get('ops', self.wl_defaults['ops'])
+            self.distrib = cfg.get('distrib', self.wl_defaults['distrib']).lower()
+            assert(self.distrib in self.avail_distrib)
+            self.shuffle = cfg.get('shuffle', self.wl_defaults['shuffle'])
+            assert(isinstance(self.shuffle, bool))
+            self.key_size = cfg.get('key_size', self.wl_defaults['key_size'])
+            self.min_val_size = cfg.get('min_val_size', self.wl_defaults['min_val_size'])
+            self.max_val_size = cfg.get('max_val_size', self.wl_defaults['max_val_size'])
+            self.distrib_class = NoneDistribution
+            if self.distrib == 'uniform':
+                self.distrib_class = UniformDistribution
+            elif self.distrib == 'latest':
+                self.distrib_class = LatestDistribution
+            elif self.distrib == 'oldest':
+                self.distrib_class = OldestDistribution
+        except AssertionError:
+            raise ValueError("Can't parse config file %s" % repr(conf))
 
     def __init__(self, cfg=None):
         self.read_config(cfg)
