@@ -1,7 +1,7 @@
 #include "mydb.h"
 
 
-int db_close(const struct DB *db) {
+int db_close(struct DB *db) {
 	db->close(db);
 }
 
