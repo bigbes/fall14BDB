@@ -5,7 +5,7 @@ int db_close(struct DB *db) {
 	db->close(db);
 }
 
-int db_del(const struct DB *db, void *key, size_t key_len) {
+int db_del(struct DB *db, void *key, size_t key_len) {
 	struct DBT keyt = {
 		.data = key,
 		.size = key_len
@@ -13,8 +13,8 @@ int db_del(const struct DB *db, void *key, size_t key_len) {
 	return db->del(db, &keyt);
 }
 
-int db_get(const struct DB *db, void *key, size_t key_len,
-		void **val, size_t *val_len) {
+int db_get(struct DB *db, void *key, size_t key_len,
+	   void **val, size_t *val_len) {
 	struct DBT keyt = {
 		.data = key,
 		.size = key_len
@@ -26,8 +26,8 @@ int db_get(const struct DB *db, void *key, size_t key_len,
 	return rc;
 }
 
-int db_put(const struct DB *db, void *key, size_t key_len,
-		void *val, size_t val_len) {
+int db_put(struct DB *db, void *key, size_t key_len,
+	   void *val, size_t val_len) {
 	struct DBT keyt = {
 		.data = key,
 		.size = key_len

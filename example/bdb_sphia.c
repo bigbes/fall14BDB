@@ -15,15 +15,15 @@ int sph_close(struct DB *db) {
 	return 0;
 }
 
-int sph_del(const struct DB *db, const struct DBT *key) {
+int sph_del(struct DB *db, struct DBT *key) {
 	return sp_delete(db->db, key->data, key->size);
 }
 
-int sph_get(const struct DB *db, const struct DBT *key, struct DBT *data) {
+int sph_get(struct DB *db, struct DBT *key, struct DBT *data) {
 	return sp_get(db->db, key->data, key->size, &data->data, &data->size);
 }
 
-int sph_put(const struct DB *db, const struct DBT *key, const struct DBT *data) {
+int sph_put(struct DB *db, struct DBT *key, struct DBT *data) {
 	return sp_set(db->db, key->data, key->size, data->data, data->size);
 }
 
@@ -32,7 +32,7 @@ int sph_put(const struct DB *db, const struct DBT *key, const struct DBT *data) 
  * (sophia doesn't save page size)
  * * * * * * * * */
 
-struct DB *dbcreate(const char *path, const struct DBC conf) {
+struct DB *dbcreate(char *path, struct DBC conf) {
 	struct DB *db = (struct DB *)calloc(1, sizeof(struct DB));
 	int rc = 0;
 	assert(db);
@@ -57,7 +57,7 @@ int db_close(struct DB *db) {
 	return db->close(db);
 }
 
-int db_del(const struct DB *db, void *key, size_t key_len) {
+int db_del(struct DB *db, void *key, size_t key_len) {
 	struct DBT keyt = {
 		.data = key,
 		.size = key_len
@@ -65,7 +65,7 @@ int db_del(const struct DB *db, void *key, size_t key_len) {
 	return db->del(db, &keyt);
 }
 
-int db_get(const struct DB *db, void *key, size_t key_len,
+int db_get(struct DB *db, void *key, size_t key_len,
 		void **val, size_t *val_len) {
 	struct DBT keyt = {
 		.data = key,
@@ -78,7 +78,7 @@ int db_get(const struct DB *db, void *key, size_t key_len,
 	return rc;
 }
 
-int db_put(const struct DB *db, void *key, size_t key_len,
+int db_put(struct DB *db, void *key, size_t key_len,
 		void *val, size_t val_len) {
 	struct DBT keyt = {
 		.data = key,
