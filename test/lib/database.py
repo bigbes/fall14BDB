@@ -25,7 +25,7 @@ class Database(object):
             raise DBException("Can't find SO ad %s", repr(self.so_path))
         self.dll = ctypes.CDLL(self.so_path)
         self.exc = DBException
-        self.db = self.dll.dbcreate('my.db', ctypes.byref(DBC(16*1024*1024, 4096)))
+        self.db = self.dll.dbcreate('my.db', DBC(16*1024*1024, 4096))
         if not self.db:
             raise self.exc("Can't create DB")
         self.fput = self.dll.db_put
