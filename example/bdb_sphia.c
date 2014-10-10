@@ -1,6 +1,6 @@
 #include "bdb_sphia.h"
 #include <assert.h>
-
+#include <stdio.h>
 /* struct DB API */
 
 int sph_close(struct DB *db) {
@@ -16,15 +16,30 @@ int sph_close(struct DB *db) {
 }
 
 int sph_del(struct DB *db, struct DBT *key) {
-	return sp_delete(db->db, key->data, key->size);
+	int rc = sp_delete(db->db, key->data, key->size);
+	if (rc == -1) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
+	return 0;
 }
 
 int sph_get(struct DB *db, struct DBT *key, struct DBT *data) {
-	return sp_get(db->db, key->data, key->size, &data->data, &data->size);
+	int rc = sp_get(db->db, key->data, key->size, &data->data, &data->size);
+	if (rc == -1) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
+	return 0;
 }
 
 int sph_put(struct DB *db, struct DBT *key, struct DBT *data) {
-	return sp_set(db->db, key->data, key->size, data->data, data->size);
+	int rc = sp_set(db->db, key->data, key->size, data->data, data->size);
+	if (rc == -1) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
+	return 0;
 }
 
 /* * * * * * * * *
@@ -39,11 +54,20 @@ struct DB *dbcreate(char *path, struct DBC conf) {
 	db->env = sp_env();
 	assert(db->env);
 	rc = sp_ctl(db->env, SPDIR, SPO_CREAT|SPO_RDWR, path);
-	assert(!rc);
+	if (rc == -1) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
 	rc = sp_ctl(db->env, SPPAGE, (uint32_t )conf.chunk_size);
-	assert(!rc);
+	if (rc == -1) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
 	db->db = sp_open(db->env);
-	assert(db->db);
+	if (!db->db) {
+		printf("error: %s\n", sp_error(db->env));
+		assert(0);
+	}
 	db->get   = sph_get;
 	db->put   = sph_put;
 	db->del   = sph_del;
