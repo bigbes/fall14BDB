@@ -19,6 +19,12 @@ def run_workload(fl, db, out):
             out.write(val + '\n')
         elif arr[0] == 'del':
             db.delete(arr[1])
+            try:
+                val = db.get(arr[1])
+            except:
+                pass
+            else:
+                raise ValueError('element wasn\'t deleted')
 
 def parse_args(cur_path):
     parser = argparse.ArgumentParser(
@@ -60,11 +66,14 @@ if __name__ == '__main__':
     cur_path = os.getcwd()
     chdir()
     cur_args = parse_args(cur_path)
-
+    error = False
     db = Database(cur_args.so)
     wl = open(cur_args.workload)
     out = StringIO()
-    run_workload(wl, db, out)
+    try:
+        run_workload(wl, db, out)
+    except Exception as e:
+        error =  repr(e)
     output = cur_args.workload.replace('.in', '.out')
     print "=" * 80
     print "Library:", cur_args.so
@@ -74,9 +83,12 @@ if __name__ == '__main__':
         print "Output:", output
     else:
         print "Test with workload " + repr(cur_args.workload)
-        if (open(output, 'r').read() == out.getvalue()):
-            print "Result is OK"
+        if (open(output, 'r').read() == out.getvalue()) and not error:
+            print "Result is OK."
         else:
             open(output + '.bad', 'w').write(out.getvalue())
-            print "Result is not OK"
+            print "Result is not OK.",
+            if error:
+                print "Error: " + error,
+            print ''
     print "=" * 80

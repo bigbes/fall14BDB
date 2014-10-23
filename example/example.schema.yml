@@ -1,7 +1,8 @@
 ---
-get: 70
-put: 30
-shuffle: True
+get: 50
+put: 50
+del: 0
+shuffle: False
 distrib: 'uniform'
 ops: 10000
 ...

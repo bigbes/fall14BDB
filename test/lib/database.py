@@ -67,7 +67,7 @@ class Database(object):
 
     def cleanup(self):
         if os.path.exists('my.db'):
-            shutil.rmtree('my.db')
+            os.remove('my.db')
 
     def close(self):
         if 'db' in dir(self) and self.db:
@@ -135,7 +135,7 @@ class Sophia(Database):
 
     def cleanup(self):
         if os.path.exists('./db'):
-            shutil.rmtree('./db')
+            shutil.rmtree('my.db')
 
     def close(self):
         if 'db' in dir(self) and self.db:

@@ -86,8 +86,9 @@ def randomword(length):
 
 class Workload(object):
     wl_defaults = {
-        'get': 50,
-        'put': 50,
+        'get': 30,
+        'put': 40,
+        'del': 30,
         'ops': 1000,
         'distrib': 'none',
         'shuffle': False,
@@ -111,13 +112,15 @@ class Workload(object):
         cfg = {} if conf is None else yaml.load(open(conf, 'r').read())
         try:
             assert(isinstance(cfg, dict))
-            if ('get' in cfg) or ('put' in cfg):
+            if ('get' in cfg) or ('put' in cfg) or ('del' in cfg):
                 self.get = cfg.get('get', 0)
                 self.put = cfg.get('put', 0)
+                self.delete = cfg.get('del', 0)
             else:
                 self.get = self.wl_defaults['get']
                 self.put = self.wl_defaults['put']
-            assert(self.get + self.put == 100)
+                self.delete = self.wl_defaults['del']
+            assert(self.get + self.put + self.delete == 100)
             self.ops = cfg.get('ops', self.wl_defaults['ops'])
             self.distrib = cfg.get('distrib', self.wl_defaults['distrib']).lower()
             assert(self.distrib in self.avail_distrib)
@@ -142,6 +145,7 @@ class Workload(object):
         self.opset  = []
         self.opset.extend([0] * long(self.ops*self.put/100))
         self.opset.extend([1] * long(self.ops*self.get/100))
+        self.opset.extend([2] * long(self.ops*self.delete/100))
         if self.shuffle:
             random.shuffle(self.opset)
 
@@ -157,21 +161,29 @@ class Workload(object):
             random.shuffle(self.vals)
         put = self.distrib_class(self.keys, self.vals)
         get = self.distrib_class(self.keyset)
+        delete = self.distrib_class(self.keyset)
         opqueue = []
         for k in itertools.chain(self.opset, opqueue):
             if k == 0:
                 kv = put.get()
                 if (kv is None):
-                    opqueue.append(0)
+                    opqueue.append(k)
                     continue
                 self.keyset.append(kv[0])
                 yield ['put', kv[0], kv[1]]
             elif k == 1:
                 kv = get.get()
                 if (kv is None):
-                    opqueue.append(1)
+                    opqueue.append(k)
                     continue
                 yield ['get', kv[0]]
+            elif k == 2:
+                kv = delete.get()
+                if (kv is None):
+                    opqueue.append(k)
+                    continue
+                self.keyset.discard(kv[0])
+                yield ['del', kv[0]]
 
 def chdir():
     path = os.path.dirname(sys.argv[0])

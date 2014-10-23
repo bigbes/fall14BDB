@@ -3,12 +3,15 @@ all:
 
 gen_workload:
 	@make -C example
-	@python test/gen_workload.py --output workload
-	@python test/runner.py --new --workload workload.in --so example/libdbsophia.so
+	@python test/gen_workload.py --output workload_custom
+	@python test/runner.py --new --workload workload_custom.in --so example/libdbsophia.so
 
 gen_workload_custom:
-	@python test/gen_workload.py --output workload --config example/example.schema.yml
+	@python test/gen_workload.py --output   workload --config example/example.schema.yml
 	@python test/runner.py --new --workload workload.in --so example/libdbsophia.so
 
 runner:
-	@python test/runner.py --workload workload.in --so ./libmydb.so
+	python test/runner.py --workload custom_workloads/workload.in --so ./libmydb.so
+
+runner_rw:
+	python test/runner.py --workload custom_workloads/workload_custom.in --so ./libmydb.so
