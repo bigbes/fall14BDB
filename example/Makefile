@@ -12,4 +12,4 @@ gen_workload_custom:
 	@python ../test/runner.py --new --workload workload.in --so ./libdbsophia.so
 
 runner:
-	@python ../test/runner.py --workload workload.in --so ./libdbsophia.so
+	@python ../test/runner.py --workload ../custom_workloads/workload.in --so ./libdbsophia.so
