@@ -1,5 +1,20 @@
 all:
-	g++ main.cpp database.cpp -lyaml-cpp -ldl -o test_speed --std=c++11 -lpthread
-test:
-	time ./test_speed
+	g++ main.cpp database.cpp -lyaml-cpp -ldl -o test_speed --std=c++11 -lpthread -g -ggdb
+
+test_uni:
 	rm -rf ./mydbpath
+	./test_speed ../workload.uni
+#	diff ../workload.uni.out ../workload.uni.out.yours >> diffs
+
+test_old:
+	rm -rf ./mydbpath
+	./test_speed ../workload.old
+#	diff ../workload.old.out ../workload.old.out.yours >> diffs
+
+test_lat:
+	rm -rf ./mydbpath
+	./test_speed ../workload.lat
+#	diff ../workload.lat.out ../workload.lat.out.yours >> diffs
+
+test_all:
+	./test.sh

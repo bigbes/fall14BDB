@@ -4,3 +4,7 @@
 
 *.in
 *.out
+*.out.bad
+*.out.yours
+
+test_cpp/test_speed

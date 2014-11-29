@@ -9,19 +9,20 @@
 
 #include "database.h"
 
-YAML::Node parse_yaml_workload(char *wl_name) {
-	return YAML::LoadFile(wl_name);
-}
+int main(int argc, char *argv[]) {
+	std::string def_so_name = "./libmydb.so";
+	std::string def_db_name = "./mydbpath";
+	std::string def_wl_name = "../workload.uni";
 
-int main() {
-	Database *db = new Database(const_cast<char *>("./libmydb.so"),
-			const_cast<char *>("./mydbpath"));
-	YAML::Node workload = parse_yaml_workload(const_cast<char *>("../custom_workloads/workload.in"));
-	std::ofstream out ("../custom_workloads/workload.out.yours");
+	if (argc == 2) def_wl_name = std::string(argv[1]);
+
+	Database *db = new Database(def_so_name.c_str(), def_db_name.c_str());
+	YAML::Node workload = YAML::LoadFile((def_wl_name + ".in").c_str());
+	std::ofstream out ((def_wl_name + ".out.yours").c_str());
 	struct timespec t1, t2; memset(&t1, 0, sizeof(t1)); memset(&t2, 0, sizeof(t2));
 	uint64_t time = 0;
 	for (YAML::const_iterator it = workload.begin(); it != workload.end(); ++it) {
-		auto op = it->as< std::vector<std::string> >();
+		auto op = it->as<std::vector<std::string>>();
 		int retval = 0;
 		if (op[0] == std::string("put")) {
 			clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -45,5 +46,5 @@ int main() {
 			std::cout << "bad op\n";
 		}
 	}
-	std::cout << "Overall lib time: " << ((double )time / 1e9) << "\n";
+	std::cerr << "Overall lib time: " << ((double )time / 1e9) << "\n";
 }

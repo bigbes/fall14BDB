@@ -67,14 +67,14 @@ Database::~Database() {
 int Database::put(const std::string& key, const std::string& val) {
 	int retval = this->put_function(this->db_object, key.c_str(), key.size(), val.c_str(), val.size());
 	if (retval != 0)
-		std::cout << "Error, while inserting \"" << key << "\"with value \"w" << val << "\"\n";
+//		std::cout << "Error, while inserting \"" << key << "\" with value \"" << val << "\"\n";
 	return retval;
 }
 
 int Database::get(const std::string& key, char **val, size_t *val_size) {
 	int retval = this->get_function(this->db_object, key.c_str(), key.size(), val, val_size);
 	if (retval != 0) {
-		std::cout << "Error, while getting \"" << key <<  "\"\n";
+//		std::cout << "Error, while getting \"" << key <<  "\"\n";
 	}
 	return retval;
 }
