@@ -58,11 +58,6 @@ struct DB *dbcreate(char *path, struct DBC conf) {
 		printf("error: %s\n", sp_error(db->env));
 		assert(0);
 	}
-	rc = sp_ctl(db->env, SPPAGE, (uint32_t )conf.chunk_size);
-	if (rc == -1) {
-		printf("error: %s\n", sp_error(db->env));
-		assert(0);
-	}
 	db->db = sp_open(db->env);
 	if (!db->db) {
 		printf("error: %s\n", sp_error(db->env));
